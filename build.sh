@@ -1,0 +1,1 @@
+g++ sch.cpp -o sch-db-query-tool -I /usr/include/postgresql -lpq
