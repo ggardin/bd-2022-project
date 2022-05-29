@@ -1,1 +1,2 @@
-g++ sch.cpp -o sch-db-query-tool -I /usr/include/postgresql -lpq
+g++ sch.cpp -o sch -I /usr/include/postgresql -lpq
+g++ sch.cpp -o sch -L dependencies\lib -lpq
