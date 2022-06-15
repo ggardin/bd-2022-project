@@ -35,6 +35,8 @@ int main() {
 	vector<string> config = fetch_config();
 	string conninfo = "host=" + config[0] + "port=" + config [1] + "dbname=" + config[2] + "user=" + config[3] + "password=" + config[4];
 
+	cout << "Client Space Center Houston" << endl;
+
 	try {
 		conn = new connection(conninfo);
 	}
@@ -45,13 +47,14 @@ int main() {
 	}
 
 	int qid;
-	cout << "1)\tAstronauti che hanno ricevuto il brevetto negli USA" << endl;
-	cout << "2)\t" << endl;
-	cout << "3)\t" << endl;
-	cout << "4)\t" << endl;
-	cout << "5)\t" << endl;
-	cout << "6)\t" << endl;
-	cout << "Inserire la query da eseguire (1~6): ";
+	cout << "1)\tElenco delle foto della Terra scattate tra il 16 maggio 2020 e il 29 maggio 2020" << endl;
+	cout << "2)\tNumero delle foto scattate per ciascun pianeta (valore 0 incluso)" << endl;
+	cout << "3)\tElenco degli astronauti che hanno ricevuto il brevetto negli USA" << endl;
+	cout << "4)\tNumero delle basi spaziali gestite da ciascuna agenzia spaziale (valore 0 incluso)" << endl;
+	cout << "5)\tElenco degli Stati che hanno nel loro territorio almeno un'agenzia spaziale che a sua volta ha almeno una base spaziale" << endl;
+	cout << "6)\tElenco degli Stati che hanno dato nascita ad astroanuti, ma che non possiedono accademie" << endl;
+	cout << "7)\tElenco dei primi 3 Stati che hanno la differenza minore tra il budget e costi totali dei programmi spaziali, ma questa differenza deve essere maggiore della media delle differenze di tutti gli Stati" << endl;
+	cout << "Inserire la query da eseguire (1~7): ";
 	cin >> qid;
 
 	try {
