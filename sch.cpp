@@ -21,9 +21,12 @@ using std::vector;
 
 vector<string> fetch_config();
 
+void astronauti(connection*);
+
 int main() {
-	vector<string> config = fetch_config();
 	connection* conn;
+
+	vector<string> config = fetch_config();
 	string conninfo = "host=" + config[0] + "dbname=" + config[1] + "user=" + config[2] + "password=" + config[3];
 
 	try {
@@ -36,7 +39,7 @@ int main() {
 	}
 
 	int qid;
-	cout << "1)\t" << endl;
+	cout << "1)\tAstronauti che hanno ricevuto il brevetto negli USA" << endl;
 	cout << "2)\t" << endl;
 	cout << "3)\t" << endl;
 	cout << "4)\t" << endl;
@@ -48,6 +51,7 @@ int main() {
 	try {
 		switch (qid) {
 		case 1:
+			astronauti(conn);
 			break;
 		case 2:
 			break;
@@ -71,6 +75,7 @@ int main() {
 	return 0;
 }
 
+// Funzione helper per il parsing del file di configurazione
 vector<string> fetch_config() {
 	vector<string> tmp;
 	ifstream file("./config.txt");
@@ -89,4 +94,21 @@ vector<string> fetch_config() {
 	file.close();
 
 	return tmp;
+}
+
+// QUERY 1
+void astronauti(connection* conn) {
+	vector<row_t> rows = conn->exec("SELECT * FROM astronauta");
+
+	cout << "\033[1;4;94mID" << setw(20) << "Cognome" << setw(55) << "Indirizzo"
+		 << "\033[0m" << endl;
+
+	for (row_t& row : rows) {
+		string id = row["id"];
+		string name = row["cognome"];
+		string add = row["indirizzo"];
+
+		cout << id << setw(20) << name << setw(55) << add << endl;
+	}
+	cout << endl;
 }
