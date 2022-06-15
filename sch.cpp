@@ -27,14 +27,14 @@ int main() {
 	connection* conn;
 
 	vector<string> config = fetch_config();
-	string conninfo = "host=" + config[0] + "dbname=" + config[1] + "user=" + config[2] + "password=" + config[3];
+	string conninfo = "host=" + config[0] + "port=" + config [1] + "dbname=" + config[2] + "user=" + config[3] + "password=" + config[4];
 
 	try {
 		conn = new connection(conninfo);
 	}
 	catch (std::runtime_error error) {
-		cout << "\033[1;31mImpossibile connettersi a PostegreSQL.\033[0m" << endl;
-		cout << "\033[1;31mErrore: " << error.what() << "\033[0m" << endl;
+		cout << "Impossibile connettersi a PostegreSQL." << endl;
+		cout << "Errore: " << error.what() << endl;
 		return 1;
 	}
 
