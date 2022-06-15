@@ -31,63 +31,72 @@ void treStati_differenze_media(connection*);
 
 int main() {
 	connection* conn;
-
+	vector<row_t> rows;
 	vector<string> config = fetch_config();
 	string conninfo = "host=" + config[0] + "port=" + config [1] + "dbname=" + config[2] + "user=" + config[3] + "password=" + config[4];
 
-	cout << "Client Space Center Houston" << endl;
+	cout << "Space Center Houston | DB Client" << endl;
 
 	try {
 		conn = new connection(conninfo);
 	}
 	catch (std::runtime_error error) {
-		cout << "Impossibile connettersi a PostegreSQL." << endl;
+		cout << "Impossibile connettersi a PostgreSQL." << endl;
 		cout << "Errore: " << error.what() << endl;
 		return 1;
 	}
 
 	int qid;
-	cout << "1)\tElenco delle foto della Terra scattate tra il 16 maggio 2020 e il 29 maggio 2020" << endl;
-	cout << "2)\tNumero delle foto scattate per ciascun pianeta (valore 0 incluso)" << endl;
-	cout << "3)\tElenco degli astronauti che hanno ricevuto il brevetto negli USA" << endl;
-	cout << "4)\tNumero delle basi spaziali gestite da ciascuna agenzia spaziale (valore 0 incluso)" << endl;
-	cout << "5)\tElenco degli Stati che hanno nel loro territorio almeno un'agenzia spaziale che a sua volta ha almeno una base spaziale" << endl;
-	cout << "6)\tElenco degli Stati che hanno dato nascita ad astroanuti, ma che non possiedono accademie" << endl;
-	cout << "7)\tElenco dei primi 3 Stati che hanno la differenza minore tra il budget e costi totali dei programmi spaziali, ma questa differenza deve essere maggiore della media delle differenze di tutti gli Stati" << endl;
-	cout << "Inserire la query da eseguire (1~7): ";
-	cin >> qid;
+	cout << "1) Elenco delle foto della Terra scattate tra il 16 maggio 2020 e il 29 maggio 2020" << endl;
+	cout << "2) Numero delle foto scattate per ciascun pianeta (valore 0 incluso)" << endl;
+	cout << "3) Elenco degli astronauti che hanno ricevuto il brevetto negli USA" << endl;
+	cout << "4) Numero delle basi spaziali gestite da ciascuna agenzia spaziale (valore 0 incluso)" << endl;
+	cout << "5) Elenco degli Stati che hanno nel loro territorio almeno un'agenzia spaziale che a sua volta ha almeno una base spaziale" << endl;
+	cout << "6) Elenco degli Stati che hanno dato nascita ad astroanuti, ma che non possiedono accademie" << endl;
+	cout << "7) Elenco dei primi 3 Stati che hanno la differenza minore tra il budget e costi totali dei programmi spaziali, ma questa differenza deve essere maggiore della media delle differenze di tutti gli Stati" << endl;
+	cout << "0) Termina la connessione ed esci dal programma" << endl;
 
-	try {
-		switch (qid) {
-		case 1:
-			fotoTerra(conn);
-			break;
-		case 2:
-			n_foto_per_pianeta(conn);
-			break;
-		case 3:
-			astronauti(conn);
-			break;
-		case 4:
-			n_basi_spaziali(conn);
-			break;
-		case 5:
-			stati_agSpaziale_baseSpaziale(conn);
-			break;
-		case 6:
-			stati_astronauti_noAccademie(conn);
-			break;
-		case 7:
-			treStati_differenze_media(conn);
-			break;
-		default:
-			break;
+	do {
+		cout << "\nInserire il numero della query da eseguire (1~7): ";
+		cin >> qid;
+		cout << endl;
+
+		try {
+			switch (qid) {
+				case 0:
+					cout << "Chiusura della connessione..." << endl;
+					break;
+				case 1:
+					fotoTerra(conn);
+					break;
+				case 2:
+					n_foto_per_pianeta(conn);
+					break;
+				case 3:
+					astronauti(conn);
+					break;
+				case 4:
+					n_basi_spaziali(conn);
+					break;
+				case 5:
+					stati_agSpaziale_baseSpaziale(conn);
+					break;
+				case 6:
+					stati_astronauti_noAccademie(conn);
+					break;
+				case 7:
+					treStati_differenze_media(conn);
+					break;
+				default:
+					break;
+			}
+		}
+		catch (std::runtime_error error) {
+			cout << "Errore: " << error.what() << endl;
+			return EXIT_FAILURE;
 		}
 	}
-	catch (std::runtime_error error) {
-		cout << "Errore: " << error.what() << endl;
-		return 1;
-	}
+	while(qid!=0);
 
 	delete conn;
 	return 0;
@@ -118,7 +127,7 @@ vector<string> fetch_config() {
 void fotoTerra(connection* conn) {
 	vector<row_t> rows = conn->exec("SELECT codice, tecnica, larghezza, altezza FROM Foto WHERE PianetaScattato = 'Terra' AND(data >= '2020-05-16 00:00:00' and data < '2020-05-30 00:00:00')");
 
-	cout << "Codice" << setw(20) << "Tecnica" << setw(55) << "Larghezza" << setw(55) << endl;
+	cout << "Codice" << setw(20) << "Tecnica" << setw(20) << "Larghezza" << setw(20) << "Altezza" << endl;
 
 	for (row_t& row : rows) {
 		string codice = row["codice"];
@@ -126,7 +135,7 @@ void fotoTerra(connection* conn) {
 		string larghezza = row["larghezza"];
 		string altezza = row["altezza"];
 
-		cout << codice << setw(20) << tecnica << setw(55) << larghezza << setw(55) << altezza << setw(55) << endl;
+		cout << codice << setw(20) << tecnica << setw(20) << larghezza << setw(20) << altezza << endl;
 	}
 	cout << endl;
 }
@@ -147,10 +156,11 @@ void n_foto_per_pianeta(connection* conn) {
 }
 
 // QUERY 3
+// TODO: riga dei risultati vuota
 void astronauti(connection* conn) {
 	vector<row_t> rows = conn->exec("SELECT Astronauta.codiceFiscale, nomeAstronauta, cognomeAstronauta, dataDiNascita FROM Astronauta JOIN Accademia ON Accademia.nome = Astronauta.scuolaFrequentata WHERE Accademia.stato = 'USA' GROUP BY codiceFiscale");
 
-	cout << "Codice Fiscale" << setw(20) << "Nome" << setw(55) << "Cognome" << setw(55) << "Data di nascita" << endl;
+	cout << "Codice Fiscale" << setw(20) << "Nome" << setw(20) << "Cognome" << setw(20) << "Data di nascita" << endl;
 
 	for (row_t& row : rows) {
 		string codicefiscale = row["codiceFiscale"];
@@ -158,32 +168,34 @@ void astronauti(connection* conn) {
 		string cognomeAstronauta = row["cognomeAstronauta"];
 		string dataDiNascita = row["dataDiNascita"];
 
-		cout << codicefiscale << setw(20) << nomeAstronauta << setw(55) << cognomeAstronauta << setw(55) << dataDiNascita << endl;
+		cout << codicefiscale << setw(20) << nomeAstronauta << setw(20) << cognomeAstronauta << setw(20) << dataDiNascita << endl;
 	}
 	cout << endl;
 }
 
 // QUERY 4
+// TODO: riga dei risultati parziale
 void n_basi_spaziali(connection* conn) {
 	vector<row_t> rows = conn->exec("SELECT acronimo, nomeCompleto, COUNT(Base_spaziale.enteDiGestione) AS numeroBasiSpaziali FROM Agenzia_spaziale LEFT JOIN Base_spaziale ON Base_spaziale.enteDiGestione = Agenzia_spaziale.acronimo GROUP BY acronimo ORDER BY numeroBasiSpaziali DESC");
 
-	cout << "Acronimo" << setw(20) << "Nome completo agenzia spaziale" << setw(55) << "Numero basi spaziali in possesso" << endl;
+	cout << "Acronimo" << setw(20) << "Nome completo" << setw(20) << "Num. basi spaziali" << endl;
 
 	for (row_t& row : rows) {
 		string acronimo = row["acronimo"];
 		string nomecompleto = row["nomecompleto"];
 		string numeroBasiSpaziali = row["numeroBasiSpaziali"];
 
-		cout << acronimo << setw(20) << nomecompleto << setw(55) << numeroBasiSpaziali << endl;
+		cout << acronimo << setw(20) << nomecompleto << setw(20) << numeroBasiSpaziali << endl;
 	}
 	cout << endl;
 }
 
 // QUERY 5
+// TODO: riga dei risultati vuota
 void stati_agSpaziale_baseSpaziale(connection* conn) {
 	vector<row_t> rows = conn->exec("SELECT codiceStato, nomeCompletoStato FROM Stato JOIN Agenzia_spaziale ON Stato.nomeCompletoStato = Agenzia_spaziale.stato JOIN Base_spaziale ON Agenzia_spaziale.Stato = Base_spaziale.stato GROUP BY codiceStato ORDER BY codiceStato");
 
-	cout << "Acronimo dello Stato" << setw(20) << "Nome completo" << endl;
+	cout << "Codice" << setw(20) << "Nome completo" << endl;
 
 	for (row_t& row : rows) {
 		string codiceStato = row["codiceStato"];
@@ -195,10 +207,11 @@ void stati_agSpaziale_baseSpaziale(connection* conn) {
 }
 
 // QUERY 6
+// TODO: fix error "cannot insert multiple commands into a prepared statement"
 void stati_astronauti_noAccademie(connection* conn) {
 	vector<row_t> rows = conn->exec("DROP VIEW IF EXISTS ZeroAccademie; DROP VIEW IF EXISTS NumeroAccademie; CREATE VIEW NumeroAccademie AS SELECT Stato.codiceStato, Stato.nomeCompletoStato, COUNT(Accademia.stato) AS numero_accademie FROM Stato LEFT JOIN Accademia ON Stato.nomeCompletoStato = Accademia.stato GROUP BY Stato.codiceStato; CREATE VIEW ZeroAccademie AS SELECT * FROM NumeroAccademie WHERE numero_accademie = 0; SELECT ZeroAccademie.nomeCompletoStato FROM ZeroAccademie JOIN Astronauta ON ZeroAccademie.nomeCompletoStato = Astronauta.stato GROUP BY ZeroAccademie.nomeCompletoStato");
 
-	cout << "Nome completo dello Stato" << endl;
+	cout << "Nome dello Stato" << endl;
 
 	for (row_t& row : rows) {
 		string nomeCompletoStato = row["nomeCompletoStato"];
@@ -209,6 +222,7 @@ void stati_astronauti_noAccademie(connection* conn) {
 }
 
 // QUERY 7
+// TODO: fix error "cannot insert multiple commands into a prepared statement"
 void treStati_differenze_media(connection* conn) {
 	vector<row_t> rows = conn->exec("DROP VIEW IF EXISTS Media; DROP VIEW IF EXISTS Differenza; DROP VIEW IF EXISTS SommaBudgetPerStato; CREATE VIEW SommaBudgetPerStato AS SELECT codiceStato, nomeCompletoStato, SUM(Programma_spaziale.budget) AS budget_tot, SUM(Programma_spaziale.costoTotale) AS costo_tot FROM Stato JOIN Agenzia_spaziale ON Stato.nomeCompletoStato = Agenzia_spaziale.stato JOIN Programma_spaziale ON Programma_spaziale.agenziaInteressata = Agenzia_spaziale.acronimo GROUP BY codiceStato; CREATE VIEW Differenza AS SELECT*, budget_tot - costo_tot AS delta FROM SommaBudgetPerStato; CREATE VIEW Media AS SELECT codiceStato, nomeCompletoStato FROM Differenza GROUP BY codiceStato, delta, nomeCompletoStato HAVING delta >= AVG(delta) ORDER BY delta DESC; SELECT * FROM Media LIMIT 3; ");
 

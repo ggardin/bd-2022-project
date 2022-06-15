@@ -1,4 +1,4 @@
-192.168.65.2
+localhost
 55000
 postgres
 postgres
