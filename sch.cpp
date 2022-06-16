@@ -16,6 +16,8 @@ using std::cout;
 using std::endl;
 using std::ifstream;
 using std::setw;
+using std::left;
+using std::right;
 using std::string;
 using std::vector;
 
@@ -126,20 +128,26 @@ vector<string> fetch_config() {
 // QUERY 1
 void fotoTerra(connection* conn) {
 	vector<row_t> rows = conn->exec("\
-		SELECT codice, tecnica, larghezza, altezza\
+		SELECT codice, URL, larghezza, altezza\
 		FROM Foto\
 		WHERE soggetto='Terra' AND (data >= '2020-05-16 00:00:00' AND data < '2020-05-30 00:00:00') AND tecnica = 'colore' AND larghezza >= 512\
 		");
 
-	cout << "Codice" << setw(20) << "Tecnica" << setw(20) << "Larghezza" << setw(20) << "Altezza" << endl;
+	cout << setw(15) << left << "Codice"
+		 << setw(60) << left << "URL"
+		 << setw(15) << left << "Larghezza"
+		 << setw(15) << left << "Altezza" << endl;
 
 	for (row_t& row : rows) {
 		string codice = row["codice"];
-		string tecnica = row["tecnica"];
+		string URL = row["url"];
 		string larghezza = row["larghezza"];
 		string altezza = row["altezza"];
 
-		cout << codice << setw(20) << tecnica << setw(20) << larghezza << setw(20) << altezza << endl;
+		cout << setw(15) << left << codice
+			 << setw(60) << left << URL
+			 << setw(15) << left << larghezza
+			 << setw(15) << left << altezza << endl;
 	}
 	cout << endl;
 }
@@ -153,13 +161,15 @@ void n_foto_per_pianeta(connection* conn) {
 		ORDER BY numeroFotoScattate DESC\
 		");
 
-	cout << "Nome" << setw(20) << "Numero delle foto scattate" << endl;
+	cout << setw(20) << left << "Nome"
+		 << setw(20) << left << "Foto scattate" << endl;
 
 	for (row_t& row : rows) {
 		string nome = row["nome"];
 		string numerofotoscattate = row["numerofotoscattate"];
 
-		cout << nome << setw(20) << numerofotoscattate << endl;
+		cout << setw(20) << left << nome
+			 << setw(20) << left << numerofotoscattate << endl;
 	}
 	cout << endl;
 }
@@ -173,7 +183,10 @@ void astronauti(connection* conn) {
 		GROUP BY cf\
 		");
 
-	cout << "Codice Fiscale" << setw(20) << "Nome" << setw(20) << "Cognome" << setw(20) << "Data di nascita" << endl;
+	cout << setw(25) << left << "Codice Fiscale"
+		 << setw(30) << left << "Nome"
+		 << setw(30) << left << "Cognome"
+		 << setw(20) << left << "Data di nascita" << endl;
 
 	for (row_t& row : rows) {
 		string codicefiscale = row["cf"];
@@ -181,7 +194,10 @@ void astronauti(connection* conn) {
 		string cognomeAstronauta = row["cognome"];
 		string dataDiNascita = row["datadinascita"];
 
-		cout << codicefiscale << setw(20) << nomeAstronauta << setw(20) << cognomeAstronauta << setw(20) << dataDiNascita << endl;
+		cout << setw(25) << left << codicefiscale
+			 << setw(30) << left << nomeAstronauta
+			 << setw(30) << left << cognomeAstronauta
+			 << setw(20) << left << dataDiNascita << endl;
 	}
 	cout << endl;
 }
@@ -195,20 +211,23 @@ void n_basi_spaziali(connection* conn) {
 		ORDER BY numeroBasiSpaziali DESC\
 	");
 
-	cout << "Acronimo" << setw(20) << "Nome completo" << setw(20) << "Num. basi spaziali" << endl;
+	cout << setw(15) << left << "Acronimo"
+		 << setw(60) << left << "Nome completo"
+		 << setw(20) << left << "Num. basi spaziali" << endl;
 
 	for (row_t& row : rows) {
 		string acronimo = row["acronimo"];
 		string nomecompleto = row["nomecompleto"];
 		string numeroBasiSpaziali = row["numerobasispaziali"];
 
-		cout << acronimo << setw(20) << nomecompleto << setw(20) << numeroBasiSpaziali << endl;
+		cout << setw(15) << left << acronimo
+			 << setw(60) << left << nomecompleto
+			 << setw(20) << left << numeroBasiSpaziali << endl;
 	}
 	cout << endl;
 }
 
 // QUERY 5
-// TODO: riga dei risultati vuota
 void stati_agSpaziale_baseSpaziale(connection* conn) {
 	vector<row_t> rows = conn->exec("\
 		SELECT codice, nomeEsteso\
@@ -217,19 +236,20 @@ void stati_agSpaziale_baseSpaziale(connection* conn) {
 		ORDER BY codice asc\
 	");
 
-	cout << "Codice" << setw(20) << "Nome completo" << endl;
+	cout << setw(10) << left << "Codice"
+		 << setw(30) << left << "Nome completo" << endl;
 
 	for (row_t& row : rows) {
 		string codiceStato = row["codice"];
 		string nomeCompletoStato = row["nomeesteso"];
 
-		cout << codiceStato << setw(20) << nomeCompletoStato << endl;
+		cout << setw(10) << left << codiceStato
+			 << setw(20) << left << nomeCompletoStato << endl;
 	}
 	cout << endl;
 }
 
 // QUERY 6
-// TODO: righe tuple vuote
 void stati_astronauti_noAccademie(connection* conn) {
 	vector<row_t> rows = conn->exec("\
 		SELECT ZeroAccademie.nomeEsteso\
@@ -248,7 +268,6 @@ void stati_astronauti_noAccademie(connection* conn) {
 }
 
 // QUERY 7
-// TODO: righe tuple vuote
 void treStati_differenze_media(connection* conn) {
 	vector<row_t> rows = conn->exec("\
 		SELECT *\
@@ -256,13 +275,15 @@ void treStati_differenze_media(connection* conn) {
 		LIMIT 3\
 		");
 
-	cout << "Acronimo dello Stato" << setw(20) << "Nome completo" << endl;
+	cout << setw(10) << left << "Codice"
+		 << setw(30) << left << "Nome completo" << endl;
 
 	for (row_t& row : rows) {
 		string codiceStato = row["codice"];
 		string nomeCompletoStato = row["nomeesteso"];
 
-		cout << codiceStato << setw(20) << nomeCompletoStato << endl;
+		cout << setw(10) << left << codiceStato
+			 << setw(20) << left << nomeCompletoStato << endl;
 	}
 	cout << endl;
 }
