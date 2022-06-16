@@ -21,9 +21,9 @@ using std::right;
 using std::string;
 using std::vector;
 
-vector<string> fetch_config();
+vector<string> fetch_config(string, string, string, string, string);
 
-void fotoTerra(connection*);
+void fotoCorpoCeleste(connection*);
 void n_foto_per_pianeta(connection*);
 void astronauti(connection*);
 void n_basi_spaziali(connection*);
@@ -32,14 +32,26 @@ void stati_astronauti_noAccademie(connection*);
 void treStati_differenze_media(connection*);
 
 int main() {
+	// Parametri di connessione a PostgreSQL
+	string PG_HOST = "127.0.0.1";  // hostname
+	string PG_PORT = "55000";      // numero porta
+	string PG_DB   = "postgres";   // nome DB
+	string PG_USER = "postgres";   // nome utente
+	string PG_PASS = "postgrespw"; // password
+
 	connection* conn;
 	vector<row_t> rows;
-	vector<string> config = fetch_config();
+
+	// Carica i parametri di connessione
+	vector<string> config = fetch_config(PG_HOST, PG_PORT, PG_DB, PG_USER, PG_PASS);
 	string conninfo = "host=" + config[0] + "port=" + config [1] + "dbname=" + config[2] + "user=" + config[3] + "password=" + config[4];
 
-	cout << "Space Center Houston | DB Client" << endl;
+	cout << "Space Center Houston | DB Client" << endl
+		 << "Le query con [*] sono interattive. "
+		 << "Elenco delle operazioni disponibili:" << endl << endl;
 
 	try {
+		// Effettua (tentativo di) connessione
 		conn = new connection(conninfo);
 	}
 	catch (std::runtime_error error) {
@@ -49,12 +61,13 @@ int main() {
 	}
 
 	int qid;
-	cout << "1) Elenco delle foto della Terra scattate tra il 16 maggio 2020 e il 29 maggio 2020" << endl;
-	cout << "2) Numero delle foto scattate per ciascun pianeta (valore 0 incluso)" << endl;
-	cout << "3) Elenco degli astronauti che hanno ricevuto il brevetto negli USA" << endl;
+	// Stampa elenco query
+	cout << "1) Foto di un corpo celeste scattate tra due date [*]" << endl;
+	cout << "2) Numero di foto scattate per ciascun corpo celeste (valore 0 incluso)" << endl;
+	cout << "3) Astronauti che hanno ricevuto il brevetto in un certo Stato [*]" << endl;
 	cout << "4) Numero delle basi spaziali gestite da ciascuna agenzia spaziale (valore 0 incluso)" << endl;
 	cout << "5) Elenco degli Stati che hanno nel loro territorio almeno un'agenzia spaziale che a sua volta ha almeno una base spaziale" << endl;
-	cout << "6) Elenco degli Stati che hanno dato nascita ad astroanuti, ma che non possiedono accademie" << endl;
+	cout << "6) Elenco degli Stati che sono luoghi di nascita di astroanuti, ma privi di accademie" << endl;
 	cout << "7) Elenco dei primi 3 Stati che hanno la differenza minore tra il budget e costi totali dei programmi spaziali, ma questa differenza deve essere maggiore della media delle differenze di tutti gli Stati" << endl;
 	cout << "0) Termina la connessione ed esci dal programma" << endl;
 
@@ -69,7 +82,7 @@ int main() {
 					cout << "Chiusura della connessione..." << endl;
 					break;
 				case 1:
-					fotoTerra(conn);
+					fotoCorpoCeleste(conn);
 					break;
 				case 2:
 					n_foto_per_pianeta(conn);
@@ -105,16 +118,22 @@ int main() {
 }
 
 // Funzione helper per il parsing del file di configurazione
-vector<string> fetch_config() {
+vector<string> fetch_config(string host, string port, string db, string user, string pass) {
 	vector<string> tmp;
 	ifstream file("./config.txt");
 
+	// Se il file config.txt non è rilevato, prosegue con le impostazioni di default.
 	if (!file) {
-		cerr << "File di configurazione non trovato." << endl;
-		exit(1);
+		cout << "File di configurazione non trovato.\nFallback alle impostazioni di default." << endl << endl;
+		tmp.push_back(host + " ");
+		tmp.push_back(port + " ");
+		tmp.push_back(db   + " ");
+		tmp.push_back(user + " ");
+		tmp.push_back(pass + " ");
 	}
 
-	while (!file.eof()) {
+	// Se il file config.txt è stato rilevato, ne scansiona il contenuto.
+	while (file && !file.eof()) {
 		string line;
 		file >> line;
 		tmp.push_back(line + " ");
@@ -126,11 +145,28 @@ vector<string> fetch_config() {
 }
 
 // QUERY 1
-void fotoTerra(connection* conn) {
+void fotoCorpoCeleste(connection* conn) {
+	string tmp = "";
+	string inizio = "";
+	string fine = "";
+	cout << "Indicare il corpo celeste. Ad esempio: Terra, Giove." << endl;
+	cout << "Corpo celeste: ";
+	cin >> tmp;
+	cout << endl;
+	cout << "Indicare la data di inizio. Formato YYYY-MM-DD." << endl;
+	cout << "Data di inizio: ";
+	cin >> inizio;
+	cout << endl;
+	cout << "Indicare la data di inizio. Formato YYYY-MM-DD." << endl;
+	cout << "Data di fine: ";
+	cin >> fine;
+	cout << endl;
+
+
 	vector<row_t> rows = conn->exec("\
 		SELECT codice, URL, larghezza, altezza\
 		FROM Foto\
-		WHERE soggetto='Terra' AND (data >= '2020-05-16 00:00:00' AND data < '2020-05-30 00:00:00') AND tecnica = 'colore' AND larghezza >= 512\
+		WHERE soggetto='" + tmp + "' AND (data >= '" + inizio + " 00:00:00' AND data < '" + fine + " 00:00:00') AND tecnica = 'colore' AND larghezza >= 512\
 		");
 
 	cout << setw(15) << left << "Codice"
