@@ -176,10 +176,17 @@ void n_foto_per_pianeta(connection* conn) {
 
 // QUERY 3
 void astronauti(connection* conn) {
+
+	string tmp = "";
+	cout << "Indicare lo Stato. Ad esempio: USA, Francia." << endl;
+	cout << "Stato: ";
+	cin >> tmp;
+	cout << endl;
+
 	vector<row_t> rows = conn->exec("\
 		SELECT Astronauta.cf, Astronauta.nome, Astronauta.cognome, dataDiNascita\
 		FROM Astronauta JOIN Accademia ON Accademia.nome=Astronauta.diploma\
-		WHERE Accademia.stato='USA'\
+		WHERE Accademia.stato='" + tmp + "'\
 		GROUP BY cf\
 		");
 
