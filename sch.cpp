@@ -125,7 +125,11 @@ vector<string> fetch_config() {
 
 // QUERY 1
 void fotoTerra(connection* conn) {
-	vector<row_t> rows = conn->exec("SELECT codice, tecnica, larghezza, altezza FROM Foto WHERE PianetaScattato = 'Terra' AND(data >= '2020-05-16 00:00:00' and data < '2020-05-30 00:00:00')");
+	vector<row_t> rows = conn->exec("\
+		SELECT codice, tecnica, larghezza, altezza\
+		FROM Foto\
+		WHERE soggetto='Terra' AND (data >= '2020-05-16 00:00:00' AND data < '2020-05-30 00:00:00') AND tecnica = 'colore' AND larghezza >= 512\
+		");
 
 	cout << "Codice" << setw(20) << "Tecnica" << setw(20) << "Larghezza" << setw(20) << "Altezza" << endl;
 
@@ -142,7 +146,12 @@ void fotoTerra(connection* conn) {
 
 // QUERY 2
 void n_foto_per_pianeta(connection* conn) {
-	vector<row_t> rows = conn->exec("SELECT nome, COUNT(Foto.pianetaScattato) AS numeroFotoScattate FROM Corpo_celeste LEFT JOIN Foto ON Corpo_celeste.nome = Foto.pianetaScattato GROUP BY nome ORDER BY numeroFotoScattate DESC");
+	vector<row_t> rows = conn->exec("\
+		SELECT nome, COUNT(Foto.soggetto) AS numeroFotoScattate\
+		FROM Corpo_celeste LEFT JOIN Foto ON Corpo_celeste.nome=Foto.soggetto\
+		GROUP BY nome\
+		ORDER BY numeroFotoScattate DESC\
+		");
 
 	cout << "Nome" << setw(20) << "Numero delle foto scattate" << endl;
 
@@ -156,17 +165,21 @@ void n_foto_per_pianeta(connection* conn) {
 }
 
 // QUERY 3
-// TODO: riga dei risultati vuota
 void astronauti(connection* conn) {
-	vector<row_t> rows = conn->exec("SELECT Astronauta.codiceFiscale, nomeAstronauta, cognomeAstronauta, dataDiNascita FROM Astronauta JOIN Accademia ON Accademia.nome = Astronauta.scuolaFrequentata WHERE Accademia.stato = 'USA' GROUP BY codiceFiscale");
+	vector<row_t> rows = conn->exec("\
+		SELECT Astronauta.cf, Astronauta.nome, Astronauta.cognome, dataDiNascita\
+		FROM Astronauta JOIN Accademia ON Accademia.nome=Astronauta.diploma\
+		WHERE Accademia.stato='USA'\
+		GROUP BY cf\
+		");
 
 	cout << "Codice Fiscale" << setw(20) << "Nome" << setw(20) << "Cognome" << setw(20) << "Data di nascita" << endl;
 
 	for (row_t& row : rows) {
-		string codicefiscale = row["codiceFiscale"];
-		string nomeAstronauta = row["nomeAstronauta"];
-		string cognomeAstronauta = row["cognomeAstronauta"];
-		string dataDiNascita = row["dataDiNascita"];
+		string codicefiscale = row["cf"];
+		string nomeAstronauta = row["nome"];
+		string cognomeAstronauta = row["cognome"];
+		string dataDiNascita = row["datadinascita"];
 
 		cout << codicefiscale << setw(20) << nomeAstronauta << setw(20) << cognomeAstronauta << setw(20) << dataDiNascita << endl;
 	}
@@ -174,16 +187,20 @@ void astronauti(connection* conn) {
 }
 
 // QUERY 4
-// TODO: riga dei risultati parziale
 void n_basi_spaziali(connection* conn) {
-	vector<row_t> rows = conn->exec("SELECT acronimo, nomeCompleto, COUNT(Base_spaziale.enteDiGestione) AS numeroBasiSpaziali FROM Agenzia_spaziale LEFT JOIN Base_spaziale ON Base_spaziale.enteDiGestione = Agenzia_spaziale.acronimo GROUP BY acronimo ORDER BY numeroBasiSpaziali DESC");
+	vector<row_t> rows = conn->exec("\
+		SELECT acronimo, nomeCompleto, COUNT(Base_spaziale.gestore) AS numeroBasiSpaziali\
+		FROM Agenzia_spaziale LEFT JOIN Base_spaziale ON Base_spaziale.gestore=Agenzia_spaziale.acronimo\
+		GROUP BY acronimo\
+		ORDER BY numeroBasiSpaziali DESC\
+	");
 
 	cout << "Acronimo" << setw(20) << "Nome completo" << setw(20) << "Num. basi spaziali" << endl;
 
 	for (row_t& row : rows) {
 		string acronimo = row["acronimo"];
 		string nomecompleto = row["nomecompleto"];
-		string numeroBasiSpaziali = row["numeroBasiSpaziali"];
+		string numeroBasiSpaziali = row["numerobasispaziali"];
 
 		cout << acronimo << setw(20) << nomecompleto << setw(20) << numeroBasiSpaziali << endl;
 	}
@@ -193,13 +210,18 @@ void n_basi_spaziali(connection* conn) {
 // QUERY 5
 // TODO: riga dei risultati vuota
 void stati_agSpaziale_baseSpaziale(connection* conn) {
-	vector<row_t> rows = conn->exec("SELECT codiceStato, nomeCompletoStato FROM Stato JOIN Agenzia_spaziale ON Stato.nomeCompletoStato = Agenzia_spaziale.stato JOIN Base_spaziale ON Agenzia_spaziale.Stato = Base_spaziale.stato GROUP BY codiceStato ORDER BY codiceStato");
+	vector<row_t> rows = conn->exec("\
+		SELECT codice, nomeEsteso\
+		FROM Stato JOIN Agenzia_spaziale ON Stato.nomeEsteso=Agenzia_spaziale.stato JOIN Base_spaziale ON Agenzia_spaziale.Stato=Base_spaziale.stato\
+		GROUP BY codice\
+		ORDER BY codice asc\
+	");
 
 	cout << "Codice" << setw(20) << "Nome completo" << endl;
 
 	for (row_t& row : rows) {
-		string codiceStato = row["codiceStato"];
-		string nomeCompletoStato = row["nomeCompletoStato"];
+		string codiceStato = row["codice"];
+		string nomeCompletoStato = row["nomeesteso"];
 
 		cout << codiceStato << setw(20) << nomeCompletoStato << endl;
 	}
@@ -207,14 +229,18 @@ void stati_agSpaziale_baseSpaziale(connection* conn) {
 }
 
 // QUERY 6
-// TODO: fix error "cannot insert multiple commands into a prepared statement"
+// TODO: righe tuple vuote
 void stati_astronauti_noAccademie(connection* conn) {
-	vector<row_t> rows = conn->exec("DROP VIEW IF EXISTS ZeroAccademie; DROP VIEW IF EXISTS NumeroAccademie; CREATE VIEW NumeroAccademie AS SELECT Stato.codiceStato, Stato.nomeCompletoStato, COUNT(Accademia.stato) AS numero_accademie FROM Stato LEFT JOIN Accademia ON Stato.nomeCompletoStato = Accademia.stato GROUP BY Stato.codiceStato; CREATE VIEW ZeroAccademie AS SELECT * FROM NumeroAccademie WHERE numero_accademie = 0; SELECT ZeroAccademie.nomeCompletoStato FROM ZeroAccademie JOIN Astronauta ON ZeroAccademie.nomeCompletoStato = Astronauta.stato GROUP BY ZeroAccademie.nomeCompletoStato");
+	vector<row_t> rows = conn->exec("\
+		SELECT ZeroAccademie.nomeEsteso\
+		FROM ZeroAccademie JOIN Astronauta ON ZeroAccademie.nomeEsteso=Astronauta.stato\
+		GROUP BY ZeroAccademie.nomeEsteso\
+	");
 
 	cout << "Nome dello Stato" << endl;
 
 	for (row_t& row : rows) {
-		string nomeCompletoStato = row["nomeCompletoStato"];
+		string nomeCompletoStato = row["nomeesteso"];
 
 		cout << nomeCompletoStato << endl;
 	}
@@ -222,15 +248,19 @@ void stati_astronauti_noAccademie(connection* conn) {
 }
 
 // QUERY 7
-// TODO: fix error "cannot insert multiple commands into a prepared statement"
+// TODO: righe tuple vuote
 void treStati_differenze_media(connection* conn) {
-	vector<row_t> rows = conn->exec("DROP VIEW IF EXISTS Media; DROP VIEW IF EXISTS Differenza; DROP VIEW IF EXISTS SommaBudgetPerStato; CREATE VIEW SommaBudgetPerStato AS SELECT codiceStato, nomeCompletoStato, SUM(Programma_spaziale.budget) AS budget_tot, SUM(Programma_spaziale.costoTotale) AS costo_tot FROM Stato JOIN Agenzia_spaziale ON Stato.nomeCompletoStato = Agenzia_spaziale.stato JOIN Programma_spaziale ON Programma_spaziale.agenziaInteressata = Agenzia_spaziale.acronimo GROUP BY codiceStato; CREATE VIEW Differenza AS SELECT*, budget_tot - costo_tot AS delta FROM SommaBudgetPerStato; CREATE VIEW Media AS SELECT codiceStato, nomeCompletoStato FROM Differenza GROUP BY codiceStato, delta, nomeCompletoStato HAVING delta >= AVG(delta) ORDER BY delta DESC; SELECT * FROM Media LIMIT 3; ");
+	vector<row_t> rows = conn->exec("\
+		SELECT *\
+		FROM Media\
+		LIMIT 3\
+		");
 
 	cout << "Acronimo dello Stato" << setw(20) << "Nome completo" << endl;
 
 	for (row_t& row : rows) {
-		string codiceStato = row["codiceStato"];
-		string nomeCompletoStato = row["nomeCompletoStato"];
+		string codiceStato = row["codice"];
+		string nomeCompletoStato = row["nomeesteso"];
 
 		cout << codiceStato << setw(20) << nomeCompletoStato << endl;
 	}
