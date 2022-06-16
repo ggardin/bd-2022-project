@@ -62,13 +62,13 @@ int main() {
 
 	int qid;
 	// Stampa elenco query
-	cout << "1) Foto di un corpo celeste scattate tra due date [*]" << endl;
+	cout << "1) Foto a colori di un corpo celeste scattate tra due date [*]" << endl;
 	cout << "2) Numero di foto scattate per ciascun corpo celeste (valore 0 incluso)" << endl;
 	cout << "3) Astronauti che hanno ricevuto il brevetto in un certo Stato [*]" << endl;
 	cout << "4) Numero delle basi spaziali gestite da ciascuna agenzia spaziale (valore 0 incluso)" << endl;
 	cout << "5) Elenco degli Stati che hanno nel loro territorio almeno un'agenzia spaziale che a sua volta ha almeno una base spaziale" << endl;
-	cout << "6) Elenco degli Stati che sono luoghi di nascita di astroanuti, ma privi di accademie" << endl;
-	cout << "7) Elenco dei primi 3 Stati che hanno la differenza minore tra il budget e costi totali dei programmi spaziali, ma questa differenza deve essere maggiore della media delle differenze di tutti gli Stati" << endl;
+	cout << "6) Elenco degli Stati che sono luogo di nascita di astroanuti, ma privi di accademie" << endl;
+	cout << "7) Tra gli Stati con differenza tra budget e costi totali della ricerca spaziale superiore alla media, indicare i tre più virtuosi" << endl;
 	cout << "0) Termina la connessione ed esci dal programma" << endl;
 
 	do {
@@ -149,6 +149,7 @@ void fotoCorpoCeleste(connection* conn) {
 	string tmp = "";
 	string inizio = "";
 	string fine = "";
+	string pxl = "";
 	cout << "Indicare il corpo celeste. Ad esempio: Terra, Giove." << endl;
 	cout << "Corpo celeste: ";
 	cin >> tmp;
@@ -157,16 +158,19 @@ void fotoCorpoCeleste(connection* conn) {
 	cout << "Data di inizio: ";
 	cin >> inizio;
 	cout << endl;
-	cout << "Indicare la data di inizio. Formato YYYY-MM-DD." << endl;
+	cout << "Indicare la data di fine. Formato YYYY-MM-DD." << endl;
 	cout << "Data di fine: ";
 	cin >> fine;
 	cout << endl;
-
+	cout << "Indicare la larghezza in pixel. Solo numeri." << endl;
+	cout << "Larghezza in pixel: ";
+	cin >> pxl;
+	cout << endl;
 
 	vector<row_t> rows = conn->exec("\
 		SELECT codice, URL, larghezza, altezza\
 		FROM Foto\
-		WHERE soggetto='" + tmp + "' AND (data >= '" + inizio + " 00:00:00' AND data < '" + fine + " 00:00:00') AND tecnica = 'colore' AND larghezza >= 512\
+		WHERE soggetto='" + tmp + "' AND (data >= '" + inizio + " 00:00:00' AND data < '" + fine + " 00:00:00') AND tecnica = 'colore' AND larghezza >= " + pxl + "\
 		");
 
 	cout << setw(15) << left << "Codice"
@@ -214,7 +218,7 @@ void n_foto_per_pianeta(connection* conn) {
 void astronauti(connection* conn) {
 
 	string tmp = "";
-	cout << "Indicare lo Stato. Ad esempio: USA, Francia." << endl;
+	cout << "Indicare lo Stato. Ad esempio: USA, Russia." << endl;
 	cout << "Stato: ";
 	cin >> tmp;
 	cout << endl;
